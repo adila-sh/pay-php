@@ -2,6 +2,7 @@
   "name": "adila-sh/pay",
   "description": "SDK Adila Pay para PHP 8.1+ e Laravel",
   "type": "library",
+  "license": "MIT",
   "keywords": ["adila", "adila-pay", "payments", "pix", "laravel", "sdk"],
   "homepage": "https://docs.adila.co/sdk",
   "support": {
