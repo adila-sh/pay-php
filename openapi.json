@@ -1,0 +1,5427 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Adila Pay API",
+    "version": "2.0.0",
+    "description": "Integração Stripe Connect por organização. Contrato de desenvolvimento extraído das rotas ativas do backend; disponibilidade em produção deve ser confirmada antes da integração. Operações de onboarding requerem sessão humana owner/admin. Respostas Stripe têm tipagem aberta enquanto o backend não declara schemas detalhados."
+  },
+  "servers": [
+    {
+      "url": "https://api-pay.adila.co",
+      "description": "Ambiente de teste (Stripe em test mode)."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Conta conectada",
+      "description": "Conta conectada"
+    },
+    {
+      "name": "Clientes",
+      "description": "Clientes"
+    },
+    {
+      "name": "Produtos",
+      "description": "Produtos"
+    },
+    {
+      "name": "Precos",
+      "description": "Preços"
+    },
+    {
+      "name": "Intencoes de pagamento",
+      "description": "Intenções de pagamento"
+    },
+    {
+      "name": "Cobrancas",
+      "description": "Cobranças"
+    },
+    {
+      "name": "Reembolsos",
+      "description": "Reembolsos"
+    },
+    {
+      "name": "Checkout",
+      "description": "Checkout"
+    },
+    {
+      "name": "Assinaturas",
+      "description": "Assinaturas"
+    },
+    {
+      "name": "Faturas",
+      "description": "Faturas"
+    },
+    {
+      "name": "Portal do cliente",
+      "description": "Portal do cliente"
+    },
+    {
+      "name": "Saldo",
+      "description": "Saldo"
+    },
+    {
+      "name": "Transacoes de saldo",
+      "description": "Transações de saldo"
+    },
+    {
+      "name": "Repasses",
+      "description": "Repasses"
+    },
+    {
+      "name": "Configuracao de repasses",
+      "description": "Configuração de repasses"
+    },
+    {
+      "name": "Disputas",
+      "description": "Disputas"
+    },
+    {
+      "name": "Links de pagamento",
+      "description": "Links de pagamento"
+    },
+    {
+      "name": "Codigos promocionais",
+      "description": "Códigos promocionais"
+    }
+  ],
+  "paths": {
+    "/v2/organizations/{organizationId}/stripe/account": {
+      "get": {
+        "tags": [
+          "Conta conectada"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          }
+        ],
+        "operationId": "account_retrieve",
+        "x-fern-sdk-group-name": "account",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: conta conectada",
+        "description": "Permissão: `payment-account:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Conta conectada"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "contact_email"
+                ],
+                "properties": {
+                  "contact_email": {
+                    "format": "email",
+                    "maxLength": 254,
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "account_create",
+        "x-fern-sdk-group-name": "account",
+        "x-fern-sdk-method-name": "create",
+        "summary": "Criar: conta conectada",
+        "description": "Permissão: `payment-account:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres. Exige sessão de um owner/admin; API keys não autorizam esta operação.",
+        "security": [
+          {
+            "DashboardSession": []
+          }
+        ],
+        "x-fern-audiences": [
+          "dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/account/onboarding": {
+      "post": {
+        "tags": [
+          "Conta conectada"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "operationId": "account_onboarding",
+        "x-fern-sdk-group-name": "account",
+        "x-fern-sdk-method-name": "onboarding",
+        "summary": "Gerar link de onboarding: conta conectada",
+        "description": "Permissão: `payment-account:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres. Exige sessão de um owner/admin; API keys não autorizam esta operação.",
+        "security": [
+          {
+            "DashboardSession": []
+          }
+        ],
+        "x-fern-audiences": [
+          "dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/customers": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "customers_list",
+        "x-fern-sdk-group-name": "customers",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: clientes",
+        "description": "Permissão: `customers:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Clientes"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  "email": {
+                    "format": "email",
+                    "maxLength": 254,
+                    "type": "string"
+                  },
+                  "phone": {
+                    "maxLength": 32,
+                    "type": "string"
+                  },
+                  "description": {
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "maxProperties": 50,
+                    "type": "object",
+                    "additionalProperties": {
+                      "maxLength": 500,
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "customers_create",
+        "x-fern-sdk-group-name": "customers",
+        "x-fern-sdk-method-name": "create",
+        "summary": "Criar: clientes",
+        "description": "Permissão: `customers:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/customers/{id}": {
+      "get": {
+        "tags": [
+          "Clientes"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "customers_retrieve",
+        "x-fern-sdk-group-name": "customers",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: clientes",
+        "description": "Permissão: `customers:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Clientes"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "minLength": 1,
+                    "maxLength": 256,
+                    "type": "string"
+                  },
+                  "email": {
+                    "format": "email",
+                    "maxLength": 254,
+                    "type": "string"
+                  },
+                  "phone": {
+                    "maxLength": 32,
+                    "type": "string"
+                  },
+                  "description": {
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "maxProperties": 50,
+                    "type": "object",
+                    "additionalProperties": {
+                      "maxLength": 500,
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "customers_update",
+        "x-fern-sdk-group-name": "customers",
+        "x-fern-sdk-method-name": "update",
+        "summary": "Atualizar: clientes",
+        "description": "Permissão: `customers:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/products": {
+      "get": {
+        "tags": [
+          "Produtos"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "products_list",
+        "x-fern-sdk-group-name": "products",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: produtos",
+        "description": "Permissão: `products:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Produtos"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "minLength": 1,
+                    "maxLength": 250,
+                    "type": "string"
+                  },
+                  "description": {
+                    "maxLength": 1000,
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "images": {
+                    "maxItems": 8,
+                    "type": "array",
+                    "items": {
+                      "maxLength": 2048,
+                      "pattern": "^https://",
+                      "type": "string"
+                    }
+                  },
+                  "url": {
+                    "maxLength": 2048,
+                    "pattern": "^https://",
+                    "type": "string"
+                  },
+                  "statement_descriptor": {
+                    "minLength": 5,
+                    "maxLength": 22,
+                    "pattern": "^(?=.*[A-Za-z])[^<>\\\\'\"*]+$",
+                    "type": "string"
+                  },
+                  "unit_label": {
+                    "minLength": 1,
+                    "maxLength": 12,
+                    "type": "string"
+                  },
+                  "marketing_features": {
+                    "maxItems": 15,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "name"
+                      ],
+                      "properties": {
+                        "name": {
+                          "minLength": 1,
+                          "maxLength": 80,
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "shippable": {
+                    "type": "boolean"
+                  },
+                  "metadata": {
+                    "maxProperties": 50,
+                    "type": "object",
+                    "additionalProperties": {
+                      "maxLength": 500,
+                      "type": "string"
+                    }
+                  },
+                  "default_price_data": {
+                    "type": "object",
+                    "required": [
+                      "currency",
+                      "unit_amount"
+                    ],
+                    "properties": {
+                      "currency": {
+                        "pattern": "^[a-z]{3}$",
+                        "type": "string"
+                      },
+                      "unit_amount": {
+                        "minimum": 0,
+                        "maximum": 99999999,
+                        "type": "integer"
+                      },
+                      "recurring": {
+                        "type": "object",
+                        "required": [
+                          "interval"
+                        ],
+                        "properties": {
+                          "interval": {
+                            "type": "string",
+                            "enum": [
+                              "day",
+                              "week",
+                              "month",
+                              "year"
+                            ]
+                          },
+                          "interval_count": {
+                            "minimum": 1,
+                            "maximum": 365,
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "products_create",
+        "x-fern-sdk-group-name": "products",
+        "x-fern-sdk-method-name": "create",
+        "summary": "Criar: produtos",
+        "description": "Permissão: `products:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/products/{id}": {
+      "get": {
+        "tags": [
+          "Produtos"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "products_retrieve",
+        "x-fern-sdk-group-name": "products",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: produtos",
+        "description": "Permissão: `products:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Produtos"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "minLength": 1,
+                    "maxLength": 250,
+                    "type": "string"
+                  },
+                  "description": {
+                    "maxLength": 1000,
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "images": {
+                    "maxItems": 8,
+                    "type": "array",
+                    "items": {
+                      "maxLength": 2048,
+                      "pattern": "^https://",
+                      "type": "string"
+                    }
+                  },
+                  "url": {
+                    "maxLength": 2048,
+                    "pattern": "^https://",
+                    "type": "string"
+                  },
+                  "statement_descriptor": {
+                    "minLength": 5,
+                    "maxLength": 22,
+                    "pattern": "^(?=.*[A-Za-z])[^<>\\\\'\"*]+$",
+                    "type": "string"
+                  },
+                  "unit_label": {
+                    "minLength": 1,
+                    "maxLength": 12,
+                    "type": "string"
+                  },
+                  "marketing_features": {
+                    "maxItems": 15,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "name"
+                      ],
+                      "properties": {
+                        "name": {
+                          "minLength": 1,
+                          "maxLength": 80,
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "shippable": {
+                    "type": "boolean"
+                  },
+                  "metadata": {
+                    "maxProperties": 50,
+                    "type": "object",
+                    "additionalProperties": {
+                      "maxLength": 500,
+                      "type": "string"
+                    }
+                  },
+                  "default_price": {
+                    "minLength": 3,
+                    "maxLength": 255,
+                    "pattern": "^[a-zA-Z0-9_]+$",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "products_update",
+        "x-fern-sdk-group-name": "products",
+        "x-fern-sdk-method-name": "update",
+        "summary": "Atualizar: produtos",
+        "description": "Permissão: `products:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/prices": {
+      "get": {
+        "tags": [
+          "Precos"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "prices_list",
+        "x-fern-sdk-group-name": "prices",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: preços",
+        "description": "Permissão: `products:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Precos"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "currency"
+                ],
+                "properties": {
+                  "product": {
+                    "minLength": 3,
+                    "maxLength": 255,
+                    "pattern": "^[a-zA-Z0-9_]+$",
+                    "type": "string"
+                  },
+                  "product_data": {
+                    "type": "object",
+                    "required": [
+                      "name"
+                    ],
+                    "properties": {
+                      "name": {
+                        "minLength": 1,
+                        "maxLength": 250,
+                        "type": "string"
+                      },
+                      "unit_label": {
+                        "minLength": 1,
+                        "maxLength": 12,
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "currency": {
+                    "pattern": "^[a-z]{3}$",
+                    "type": "string"
+                  },
+                  "unit_amount": {
+                    "minimum": 0,
+                    "maximum": 99999999,
+                    "type": "integer"
+                  },
+                  "nickname": {
+                    "minLength": 1,
+                    "maxLength": 250,
+                    "type": "string"
+                  },
+                  "lookup_key": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "tax_behavior": {
+                    "type": "string",
+                    "enum": [
+                      "inclusive",
+                      "exclusive",
+                      "unspecified"
+                    ]
+                  },
+                  "recurring": {
+                    "type": "object",
+                    "required": [
+                      "interval"
+                    ],
+                    "properties": {
+                      "interval": {
+                        "type": "string",
+                        "enum": [
+                          "day",
+                          "week",
+                          "month",
+                          "year"
+                        ]
+                      },
+                      "interval_count": {
+                        "minimum": 1,
+                        "maximum": 365,
+                        "type": "integer"
+                      },
+                      "trial_period_days": {
+                        "minimum": 1,
+                        "maximum": 730,
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "billing_scheme": {
+                    "type": "string",
+                    "enum": [
+                      "per_unit",
+                      "tiered"
+                    ]
+                  },
+                  "tiers_mode": {
+                    "type": "string",
+                    "enum": [
+                      "graduated",
+                      "volume"
+                    ]
+                  },
+                  "tiers": {
+                    "minItems": 1,
+                    "maxItems": 25,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "up_to"
+                      ],
+                      "properties": {
+                        "up_to": {
+                          "anyOf": [
+                            {
+                              "const": "inf",
+                              "type": "string"
+                            },
+                            {
+                              "minimum": 1,
+                              "maximum": 999999999,
+                              "type": "integer"
+                            }
+                          ]
+                        },
+                        "unit_amount": {
+                          "minimum": 0,
+                          "maximum": 99999999,
+                          "type": "integer"
+                        },
+                        "flat_amount": {
+                          "minimum": 0,
+                          "maximum": 99999999,
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "custom_unit_amount": {
+                    "type": "object",
+                    "required": [
+                      "enabled"
+                    ],
+                    "properties": {
+                      "enabled": {
+                        "const": true,
+                        "type": "boolean"
+                      },
+                      "minimum": {
+                        "minimum": 0,
+                        "maximum": 99999999,
+                        "type": "integer"
+                      },
+                      "maximum": {
+                        "minimum": 0,
+                        "maximum": 99999999,
+                        "type": "integer"
+                      },
+                      "preset": {
+                        "minimum": 0,
+                        "maximum": 99999999,
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "transform_quantity": {
+                    "type": "object",
+                    "required": [
+                      "divide_by",
+                      "round"
+                    ],
+                    "properties": {
+                      "divide_by": {
+                        "minimum": 2,
+                        "maximum": 100000,
+                        "type": "integer"
+                      },
+                      "round": {
+                        "type": "string",
+                        "enum": [
+                          "up",
+                          "down"
+                        ]
+                      }
+                    }
+                  },
+                  "metadata": {
+                    "maxProperties": 50,
+                    "type": "object",
+                    "additionalProperties": {
+                      "maxLength": 500,
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "prices_create",
+        "x-fern-sdk-group-name": "prices",
+        "x-fern-sdk-method-name": "create",
+        "summary": "Criar: preços",
+        "description": "Permissão: `products:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/prices/{id}": {
+      "get": {
+        "tags": [
+          "Precos"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "prices_retrieve",
+        "x-fern-sdk-group-name": "prices",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: preços",
+        "description": "Permissão: `products:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/prices/{id}/archive": {
+      "post": {
+        "tags": [
+          "Precos"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "operationId": "prices_archive",
+        "x-fern-sdk-group-name": "prices",
+        "x-fern-sdk-method-name": "archive",
+        "summary": "Arquivar: preços",
+        "description": "Permissão: `products:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/payment-intents": {
+      "get": {
+        "tags": [
+          "Intencoes de pagamento"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_gte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "maximum": 4102444800,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "created_lte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "maximum": 4102444800,
+              "type": "integer"
+            }
+          }
+        ],
+        "operationId": "paymentIntents_list",
+        "x-fern-sdk-group-name": "paymentIntents",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: intenções de pagamento",
+        "description": "Permissão: `payments:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Intencoes de pagamento"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount",
+                  "currency"
+                ],
+                "properties": {
+                  "amount": {
+                    "minimum": 1,
+                    "maximum": 99999999,
+                    "type": "integer"
+                  },
+                  "currency": {
+                    "pattern": "^[a-z]{3}$",
+                    "type": "string"
+                  },
+                  "customer": {
+                    "minLength": 3,
+                    "maxLength": 255,
+                    "pattern": "^[a-zA-Z0-9_]+$",
+                    "type": "string"
+                  },
+                  "description": {
+                    "maxLength": 1000,
+                    "type": "string"
+                  },
+                  "receipt_email": {
+                    "format": "email",
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "maxProperties": 50,
+                    "type": "object",
+                    "additionalProperties": {
+                      "maxLength": 500,
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "paymentIntents_create",
+        "x-fern-sdk-group-name": "paymentIntents",
+        "x-fern-sdk-method-name": "create",
+        "summary": "Criar: intenções de pagamento",
+        "description": "Permissão: `payments:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/payment-intents/{id}": {
+      "get": {
+        "tags": [
+          "Intencoes de pagamento"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "paymentIntents_retrieve",
+        "x-fern-sdk-group-name": "paymentIntents",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: intenções de pagamento",
+        "description": "Permissão: `payments:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/payment-intents/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Intencoes de pagamento"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "operationId": "paymentIntents_cancel",
+        "x-fern-sdk-group-name": "paymentIntents",
+        "x-fern-sdk-method-name": "cancel",
+        "summary": "Cancelar: intenções de pagamento",
+        "description": "Permissão: `payments:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/charges": {
+      "get": {
+        "tags": [
+          "Cobrancas"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_gte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "maximum": 4102444800,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "created_lte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "maximum": 4102444800,
+              "type": "integer"
+            }
+          }
+        ],
+        "operationId": "charges_list",
+        "x-fern-sdk-group-name": "charges",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: cobranças",
+        "description": "Permissão: `charges:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/charges/{id}": {
+      "get": {
+        "tags": [
+          "Cobrancas"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "charges_retrieve",
+        "x-fern-sdk-group-name": "charges",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: cobranças",
+        "description": "Permissão: `charges:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/refunds": {
+      "get": {
+        "tags": [
+          "Reembolsos"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "refunds_list",
+        "x-fern-sdk-group-name": "refunds",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: reembolsos",
+        "description": "Permissão: `refunds:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Reembolsos"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "payment_intent"
+                ],
+                "properties": {
+                  "payment_intent": {
+                    "minLength": 3,
+                    "maxLength": 255,
+                    "pattern": "^[a-zA-Z0-9_]+$",
+                    "type": "string"
+                  },
+                  "amount": {
+                    "minimum": 1,
+                    "maximum": 99999999,
+                    "type": "integer"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "duplicate",
+                      "fraudulent",
+                      "requested_by_customer"
+                    ]
+                  },
+                  "metadata": {
+                    "maxProperties": 50,
+                    "type": "object",
+                    "additionalProperties": {
+                      "maxLength": 500,
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "refunds_create",
+        "x-fern-sdk-group-name": "refunds",
+        "x-fern-sdk-method-name": "create",
+        "summary": "Criar: reembolsos",
+        "description": "Permissão: `refunds:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/refunds/{id}": {
+      "get": {
+        "tags": [
+          "Reembolsos"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "refunds_retrieve",
+        "x-fern-sdk-group-name": "refunds",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: reembolsos",
+        "description": "Permissão: `refunds:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/checkout/sessions/{id}": {
+      "get": {
+        "tags": [
+          "Checkout"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "checkout_retrieve",
+        "x-fern-sdk-group-name": "checkout",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: checkout",
+        "description": "Permissão: `payments:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/checkout/sessions": {
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "mode",
+                  "line_items"
+                ],
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "payment",
+                      "subscription"
+                    ]
+                  },
+                  "line_items": {
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "price",
+                        "quantity"
+                      ],
+                      "properties": {
+                        "price": {
+                          "minLength": 3,
+                          "maxLength": 255,
+                          "pattern": "^[a-zA-Z0-9_]+$",
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "minimum": 1,
+                          "maximum": 999999,
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  },
+                  "customer": {
+                    "minLength": 3,
+                    "maxLength": 255,
+                    "pattern": "^[a-zA-Z0-9_]+$",
+                    "type": "string"
+                  },
+                  "client_reference_id": {
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "type": "string"
+                  },
+                  "allow_promotion_codes": {
+                    "type": "boolean"
+                  },
+                  "metadata": {
+                    "maxProperties": 48,
+                    "type": "object",
+                    "additionalProperties": {
+                      "maxLength": 500,
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "checkout_create",
+        "x-fern-sdk-group-name": "checkout",
+        "x-fern-sdk-method-name": "create",
+        "summary": "Criar: checkout",
+        "description": "Permissão: `payments:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres. O modo subscription exige também subscriptions:write. As URLs de retorno são configuradas no servidor.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/payment-links": {
+      "get": {
+        "tags": [
+          "Links de pagamento"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "operationId": "paymentLinks_list",
+        "x-fern-sdk-group-name": "paymentLinks",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: links de pagamento",
+        "description": "Permissão: `payments:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Links de pagamento"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "line_items"
+                ],
+                "properties": {
+                  "line_items": {
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": false,
+                      "type": "object",
+                      "required": [
+                        "price",
+                        "quantity"
+                      ],
+                      "properties": {
+                        "price": {
+                          "minLength": 3,
+                          "maxLength": 255,
+                          "pattern": "^[a-zA-Z0-9_]+$",
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "minimum": 1,
+                          "maximum": 999999,
+                          "type": "integer"
+                        },
+                        "adjustable_quantity": {
+                          "additionalProperties": false,
+                          "type": "object",
+                          "required": [
+                            "enabled"
+                          ],
+                          "properties": {
+                            "enabled": {
+                              "const": true,
+                              "type": "boolean"
+                            },
+                            "minimum": {
+                              "minimum": 0,
+                              "maximum": 999999,
+                              "type": "integer"
+                            },
+                            "maximum": {
+                              "minimum": 1,
+                              "maximum": 999999,
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "allow_promotion_codes": {
+                    "type": "boolean"
+                  },
+                  "completed_sessions_limit": {
+                    "minimum": 1,
+                    "maximum": 10000,
+                    "type": "integer"
+                  },
+                  "inactive_message": {
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "type": "string"
+                  },
+                  "confirmation_message": {
+                    "minLength": 1,
+                    "maxLength": 1200,
+                    "type": "string"
+                  },
+                  "metadata": {
+                    "maxProperties": 50,
+                    "type": "object",
+                    "additionalProperties": {
+                      "maxLength": 500,
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "paymentLinks_create",
+        "x-fern-sdk-group-name": "paymentLinks",
+        "x-fern-sdk-method-name": "create",
+        "summary": "Criar: links de pagamento",
+        "description": "Permissão: `payments:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/payment-links/{id}": {
+      "patch": {
+        "tags": [
+          "Links de pagamento"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "active"
+                ],
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "paymentLinks_update",
+        "x-fern-sdk-group-name": "paymentLinks",
+        "x-fern-sdk-method-name": "update",
+        "summary": "Atualizar: links de pagamento",
+        "description": "Permissão: `payments:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/promotion-codes": {
+      "get": {
+        "tags": [
+          "Codigos promocionais"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "operationId": "promotionCodes_list",
+        "x-fern-sdk-group-name": "promotionCodes",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: códigos promocionais",
+        "description": "Permissão: `coupons:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Codigos promocionais"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "code",
+                  "discount",
+                  "duration"
+                ],
+                "properties": {
+                  "code": {
+                    "minLength": 3,
+                    "maxLength": 40,
+                    "pattern": "^[A-Za-z0-9]+$",
+                    "type": "string"
+                  },
+                  "discount": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "required": [
+                          "percent_off"
+                        ],
+                        "properties": {
+                          "percent_off": {
+                            "exclusiveMinimum": 0,
+                            "maximum": 100,
+                            "type": "number"
+                          }
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "amount_off",
+                          "currency"
+                        ],
+                        "properties": {
+                          "amount_off": {
+                            "minimum": 1,
+                            "maximum": 99999999,
+                            "type": "integer"
+                          },
+                          "currency": {
+                            "pattern": "^[a-z]{3}$",
+                            "type": "string"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "duration": {
+                    "type": "string",
+                    "enum": [
+                      "once",
+                      "forever",
+                      "repeating"
+                    ]
+                  },
+                  "duration_in_months": {
+                    "minimum": 1,
+                    "maximum": 36,
+                    "type": "integer"
+                  },
+                  "max_redemptions": {
+                    "minimum": 1,
+                    "maximum": 1000000,
+                    "type": "integer"
+                  },
+                  "expires_at": {
+                    "minimum": 0,
+                    "maximum": 4102444800,
+                    "type": "integer"
+                  },
+                  "products": {
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "uniqueItems": true,
+                    "type": "array",
+                    "items": {
+                      "pattern": "^prod_[A-Za-z0-9]+$",
+                      "maxLength": 255,
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "promotionCodes_create",
+        "x-fern-sdk-group-name": "promotionCodes",
+        "x-fern-sdk-method-name": "create",
+        "summary": "Criar: códigos promocionais",
+        "description": "Permissão: `coupons:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/promotion-codes/{id}": {
+      "patch": {
+        "tags": [
+          "Codigos promocionais"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "type": "object",
+                "required": [
+                  "active"
+                ],
+                "properties": {
+                  "active": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "promotionCodes_update",
+        "x-fern-sdk-group-name": "promotionCodes",
+        "x-fern-sdk-method-name": "update",
+        "summary": "Atualizar: códigos promocionais",
+        "description": "Permissão: `coupons:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/subscriptions": {
+      "get": {
+        "tags": [
+          "Assinaturas"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "active",
+                "past_due",
+                "unpaid",
+                "canceled",
+                "incomplete",
+                "incomplete_expired",
+                "trialing",
+                "paused"
+              ]
+            }
+          }
+        ],
+        "operationId": "subscriptions_list",
+        "x-fern-sdk-group-name": "subscriptions",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: assinaturas",
+        "description": "Permissão: `subscriptions:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/subscriptions/{id}": {
+      "get": {
+        "tags": [
+          "Assinaturas"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "subscriptions_retrieve",
+        "x-fern-sdk-group-name": "subscriptions",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: assinaturas",
+        "description": "Permissão: `subscriptions:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Assinaturas"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "cancel_at_period_end"
+                ],
+                "properties": {
+                  "cancel_at_period_end": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "subscriptions_update",
+        "x-fern-sdk-group-name": "subscriptions",
+        "x-fern-sdk-method-name": "update",
+        "summary": "Atualizar: assinaturas",
+        "description": "Permissão: `subscriptions:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/invoices": {
+      "get": {
+        "tags": [
+          "Faturas"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "invoices_list",
+        "x-fern-sdk-group-name": "invoices",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: faturas",
+        "description": "Permissão: `subscriptions:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/invoices/{id}": {
+      "get": {
+        "tags": [
+          "Faturas"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "invoices_retrieve",
+        "x-fern-sdk-group-name": "invoices",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: faturas",
+        "description": "Permissão: `subscriptions:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/billing-portal/sessions": {
+      "post": {
+        "tags": [
+          "Portal do cliente"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "minLength": 8,
+              "maxLength": 255,
+              "type": "string"
+            },
+            "description": "Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "customer"
+                ],
+                "properties": {
+                  "customer": {
+                    "minLength": 3,
+                    "maxLength": 255,
+                    "pattern": "^[a-zA-Z0-9_]+$",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "billingPortal_create",
+        "x-fern-sdk-group-name": "billingPortal",
+        "x-fern-sdk-method-name": "create",
+        "summary": "Criar: portal do cliente",
+        "description": "Permissão: `subscriptions:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/balance": {
+      "get": {
+        "tags": [
+          "Saldo"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          }
+        ],
+        "operationId": "balance_retrieve",
+        "x-fern-sdk-group-name": "balance",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: saldo",
+        "description": "Permissão: `payment-account:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/balance-transactions": {
+      "get": {
+        "tags": [
+          "Transacoes de saldo"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-z_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "payout",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "created_gte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "maximum": 4102444800,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "created_lte",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "maximum": 4102444800,
+              "type": "integer"
+            }
+          }
+        ],
+        "operationId": "balanceTransactions_list",
+        "x-fern-sdk-group-name": "balanceTransactions",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: transações de saldo",
+        "description": "Permissão: `transactions:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/payouts": {
+      "get": {
+        "tags": [
+          "Repasses"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "payouts_list",
+        "x-fern-sdk-group-name": "payouts",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: repasses",
+        "description": "Permissão: `payouts:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/payout-settings": {
+      "get": {
+        "tags": [
+          "Configuracao de repasses"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          }
+        ],
+        "operationId": "payoutSettings_retrieve",
+        "x-fern-sdk-group-name": "payoutSettings",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: configuração de repasses",
+        "description": "Permissão: `payouts:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/payouts/{id}": {
+      "get": {
+        "tags": [
+          "Repasses"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "payouts_retrieve",
+        "x-fern-sdk-group-name": "payouts",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: repasses",
+        "description": "Permissão: `payouts:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/disputes": {
+      "get": {
+        "tags": [
+          "Disputas"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "starting_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "disputes_list",
+        "x-fern-sdk-group-name": "disputes",
+        "x-fern-sdk-method-name": "list",
+        "summary": "Listar: disputas",
+        "description": "Permissão: `disputes:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    },
+    "/v2/organizations/{organizationId}/stripe/disputes/{id}": {
+      "get": {
+        "tags": [
+          "Disputas"
+        ],
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "description": "UUID da organização vinculada à API key ou à sessão autorizada."
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "minLength": 3,
+              "maxLength": 255,
+              "pattern": "^[a-zA-Z0-9_]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "operationId": "disputes_retrieve",
+        "x-fern-sdk-group-name": "disputes",
+        "x-fern-sdk-method-name": "retrieve",
+        "summary": "Consultar: disputas",
+        "description": "Permissão: `disputes:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.",
+        "security": [
+          {
+            "ApiKey": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-fern-audiences": [
+          "external"
+        ],
+        "responses": {
+          "200": {
+            "description": "Objeto Stripe retornado pelo backend. Campos de resposta ainda não possuem schema detalhado neste contrato.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StripeObject"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros rejeitados pelo Stripe ou pela regra de negócio."
+          },
+          "401": {
+            "description": "Credencial ausente, inválida ou expirada. Pode retornar corpo vazio."
+          },
+          "402": {
+            "description": "Pagamento recusado pelo Stripe."
+          },
+          "403": {
+            "description": "Permissão insuficiente ou operação reservada a owner/admin."
+          },
+          "404": {
+            "description": "Organização ou recurso não encontrado neste escopo."
+          },
+          "409": {
+            "description": "Onboarding pendente, conta desconectada, ambiente incompatível ou conflito de idempotência."
+          },
+          "422": {
+            "description": "Falha de validação dos parâmetros da requisição."
+          },
+          "429": {
+            "description": "Limite de requisições atingido."
+          },
+          "500": {
+            "description": "Falha interna do servidor."
+          },
+          "502": {
+            "description": "Stripe indisponível ou requer configuração."
+          },
+          "503": {
+            "description": "Integração Stripe não configurada."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "API key Adila Pay vinculada à organização; use somente no servidor."
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "A mesma API key Adila Pay enviada como Bearer; não use a chave Stripe."
+      },
+      "DashboardSession": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Cookie",
+        "description": "Cabeçalho Cookie completo da sessão Better Auth de um owner/admin. O nome do cookie depende do ambiente HTTP/HTTPS. API keys não autorizam onboarding."
+      }
+    },
+    "schemas": {
+      "StripeObject": {
+        "type": "object",
+        "additionalProperties": true,
+        "description": "Objeto Stripe sem schema de resposta detalhado no backend atual."
+      },
+      "StripeList": {
+        "type": "object",
+        "required": [
+          "data",
+          "has_more"
+        ],
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StripeObject"
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "x-adila-source": {
+    "files": {
+      "src/features/stripe/stripe.router.ts": "0114ef2ca77621dd0116b80247b861a47619bf5b959226f454ab062c5f0169c9",
+      "src/features/stripe/stripe.http-schema.ts": "91da47f71e1cd430cd2f6a99b649f6304637e582bcd7c839c025b0d66f858cc6",
+      "src/features/stripe/stripe.operations.ts": "ca5630c0a2f551b59bdbb14523b028a723c59f01f40cb1d41d7abeee8c9e8254",
+      "src/features/stripe/stripe.controller.ts": "5b80033101bb0082eebf44c217701869cd311c429b2ed343c8b26ac586cf32ad",
+      "src/features/stripe/stripe.errors.ts": "a5e05416682bddafbc86451fdbbb2e57799f7862e5d983551f5d22e0dde7e129",
+      "src/features/stripe/stripe.registration-controller.ts": "df855ef7a71118e215a77bf0206c13708642d0a06fa92e68fda21ac9aff77458",
+      "src/features/stripe/stripe.product-images.ts": "07082752da2c5e384f8ba1682d7cb2d76d0c1b7786cb794d4f2fd647be4b756c",
+      "src/libs/auth/financial-auth.ts": "6700a2ed9621f18e99dc764b9ced661da9f021ab9b1790c5316f16526bed7c9f",
+      "src/libs/auth/organization-access.ts": "a98519a4f3ccdf2cbcc57d94cc43f06d6eb7da4ea65c41b2b3cc76e557bc879c",
+      "src/libs/http/idempotency.ts": "a1b78bdf8991d7e13f339e9c9d4721c79e59898ec8dd5dd8853740d20e03182a"
+    }
+  }
+}

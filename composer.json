@@ -1,0 +1,40 @@
+{
+  "name": "adila-sh/pay",
+  "description": "SDK Adila Pay para PHP 8.1+ e Laravel",
+  "type": "library",
+  "keywords": ["adila", "adila-pay", "payments", "pix", "laravel", "sdk"],
+  "homepage": "https://docs.adila.co/sdk",
+  "support": {
+    "docs": "https://docs.adila.co/sdk",
+    "source": "https://github.com/adila-sh/pay-php"
+  },
+  "require": {
+    "php": "^8.1",
+    "ext-json": "*",
+    "psr/http-client": "^1.0",
+    "psr/http-client-implementation": "^1.0",
+    "psr/http-factory": "^1.0",
+    "psr/http-factory-implementation": "^1.0",
+    "psr/http-message": "^1.1 || ^2.0",
+    "php-http/discovery": "^1.0",
+    "php-http/multipart-stream-builder": "^1.0"
+  },
+  "suggest": {
+    "guzzlehttp/guzzle": "Cliente HTTP PSR-18 com suporte a timeout (já incluído no Laravel).",
+    "illuminate/support": "Integração Laravel: service provider, facade AdilaPay e config/adila-pay.php."
+  },
+  "autoload": {
+    "psr-4": {
+      "AdilaPay\\Laravel\\": "laravel/",
+      "AdilaPay\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": ["AdilaPay\\Laravel\\AdilaPayServiceProvider"],
+      "aliases": {
+        "AdilaPay": "AdilaPay\\Laravel\\Facades\\AdilaPay"
+      }
+    }
+  }
+}
