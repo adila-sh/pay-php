@@ -14,22 +14,22 @@ class CreateCheckoutRequestLineItemsItem extends JsonSerializableType
     public string $price;
 
     /**
-     * @var int $quantity
+     * @var ?int $quantity
      */
     #[JsonProperty('quantity')]
-    public int $quantity;
+    public ?int $quantity;
 
     /**
      * @param array{
      *   price: string,
-     *   quantity: int,
+     *   quantity?: ?int,
      * } $values
      */
     public function __construct(
         array $values,
     ) {
         $this->price = $values['price'];
-        $this->quantity = $values['quantity'];
+        $this->quantity = $values['quantity'] ?? null;
     }
 
     /**

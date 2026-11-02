@@ -87,6 +87,12 @@ class InvoicesClient
         if ($request->startingAfter !== null) {
             $query['starting_after'] = $request->startingAfter;
         }
+        if ($request->customer !== null) {
+            $query['customer'] = $request->customer;
+        }
+        if ($request->subscription !== null) {
+            $query['subscription'] = $request->subscription;
+        }
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(

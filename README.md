@@ -78,7 +78,7 @@ Respostas HTTP de erro lançam `AdilaPay\Exceptions\AdilaPayApiException`, com
 `getCode()` igual ao status e `getBody()` com o corpo. Falhas de rede e timeouts
 lançam `AdilaPay\Exceptions\AdilaPayException`.
 
-São 43 operações financeiras, incluindo links de pagamento, códigos promocionais
+São 75 operações financeiras, incluindo links de pagamento, códigos promocionais
 e configuração de repasses. Criação de conta, onboarding e cadastro humano ficam
 fora do cliente de integração. As requisições são tipadas; respostas Stripe
 continuam abertas como arrays. Nas listas, use `$list->data`, `$list->hasMore`

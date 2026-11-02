@@ -2,6 +2,15 @@
 
 namespace AdilaPay;
 
+use AdilaPay\Authorizations\AuthorizationsClient;
+use AdilaPay\Disputes\DisputesClient;
+use AdilaPay\Schedules\SchedulesClient;
+use AdilaPay\UsageMeters\UsageMetersClient;
+use AdilaPay\UsageEvents\UsageEventsClient;
+use AdilaPay\UsageStatement\UsageStatementClient;
+use AdilaPay\UsageAlerts\UsageAlertsClient;
+use AdilaPay\UsagePreview\UsagePreviewClient;
+use AdilaPay\Recovery\RecoveryClient;
 use AdilaPay\Account\AccountClient;
 use AdilaPay\Customers\CustomersClient;
 use AdilaPay\Products\ProductsClient;
@@ -13,19 +22,64 @@ use AdilaPay\Checkout\CheckoutClient;
 use AdilaPay\PaymentLinks\PaymentLinksClient;
 use AdilaPay\PromotionCodes\PromotionCodesClient;
 use AdilaPay\Subscriptions\SubscriptionsClient;
+use AdilaPay\InvoiceItems\InvoiceItemsClient;
 use AdilaPay\Invoices\InvoicesClient;
 use AdilaPay\BillingPortal\BillingPortalClient;
 use AdilaPay\Balance\BalanceClient;
 use AdilaPay\BalanceTransactions\BalanceTransactionsClient;
 use AdilaPay\Payouts\PayoutsClient;
 use AdilaPay\PayoutSettings\PayoutSettingsClient;
-use AdilaPay\Disputes\DisputesClient;
 use Psr\Http\Client\ClientInterface;
 use AdilaPay\Core\Client\RawClient;
 use Exception;
 
 class AdilaPayClient
 {
+    /**
+     * @var AuthorizationsClient $authorizations
+     */
+    public AuthorizationsClient $authorizations;
+
+    /**
+     * @var DisputesClient $disputes
+     */
+    public DisputesClient $disputes;
+
+    /**
+     * @var SchedulesClient $schedules
+     */
+    public SchedulesClient $schedules;
+
+    /**
+     * @var UsageMetersClient $usageMeters
+     */
+    public UsageMetersClient $usageMeters;
+
+    /**
+     * @var UsageEventsClient $usageEvents
+     */
+    public UsageEventsClient $usageEvents;
+
+    /**
+     * @var UsageStatementClient $usageStatement
+     */
+    public UsageStatementClient $usageStatement;
+
+    /**
+     * @var UsageAlertsClient $usageAlerts
+     */
+    public UsageAlertsClient $usageAlerts;
+
+    /**
+     * @var UsagePreviewClient $usagePreview
+     */
+    public UsagePreviewClient $usagePreview;
+
+    /**
+     * @var RecoveryClient $recovery
+     */
+    public RecoveryClient $recovery;
+
     /**
      * @var AccountClient $account
      */
@@ -82,6 +136,11 @@ class AdilaPayClient
     public SubscriptionsClient $subscriptions;
 
     /**
+     * @var InvoiceItemsClient $invoiceItems
+     */
+    public InvoiceItemsClient $invoiceItems;
+
+    /**
      * @var InvoicesClient $invoices
      */
     public InvoicesClient $invoices;
@@ -110,11 +169,6 @@ class AdilaPayClient
      * @var PayoutSettingsClient $payoutSettings
      */
     public PayoutSettingsClient $payoutSettings;
-
-    /**
-     * @var DisputesClient $disputes
-     */
-    public DisputesClient $disputes;
 
     /**
      * @var array{
@@ -162,6 +216,15 @@ class AdilaPayClient
             options: $this->options,
         );
 
+        $this->authorizations = new AuthorizationsClient($this->client, $this->options);
+        $this->disputes = new DisputesClient($this->client, $this->options);
+        $this->schedules = new SchedulesClient($this->client, $this->options);
+        $this->usageMeters = new UsageMetersClient($this->client, $this->options);
+        $this->usageEvents = new UsageEventsClient($this->client, $this->options);
+        $this->usageStatement = new UsageStatementClient($this->client, $this->options);
+        $this->usageAlerts = new UsageAlertsClient($this->client, $this->options);
+        $this->usagePreview = new UsagePreviewClient($this->client, $this->options);
+        $this->recovery = new RecoveryClient($this->client, $this->options);
         $this->account = new AccountClient($this->client, $this->options);
         $this->customers = new CustomersClient($this->client, $this->options);
         $this->products = new ProductsClient($this->client, $this->options);
@@ -173,13 +236,13 @@ class AdilaPayClient
         $this->paymentLinks = new PaymentLinksClient($this->client, $this->options);
         $this->promotionCodes = new PromotionCodesClient($this->client, $this->options);
         $this->subscriptions = new SubscriptionsClient($this->client, $this->options);
+        $this->invoiceItems = new InvoiceItemsClient($this->client, $this->options);
         $this->invoices = new InvoicesClient($this->client, $this->options);
         $this->billingPortal = new BillingPortalClient($this->client, $this->options);
         $this->balance = new BalanceClient($this->client, $this->options);
         $this->balanceTransactions = new BalanceTransactionsClient($this->client, $this->options);
         $this->payouts = new PayoutsClient($this->client, $this->options);
         $this->payoutSettings = new PayoutSettingsClient($this->client, $this->options);
-        $this->disputes = new DisputesClient($this->client, $this->options);
     }
 
     /**

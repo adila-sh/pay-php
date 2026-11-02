@@ -3,6 +3,7 @@
 namespace AdilaPay\PaymentIntents\Requests;
 
 use AdilaPay\Core\Json\JsonSerializableType;
+use AdilaPay\PaymentIntents\Types\CreatePaymentIntentsRequestCaptureMethod;
 use AdilaPay\Core\Json\JsonProperty;
 use AdilaPay\Core\Types\ArrayType;
 
@@ -17,6 +18,12 @@ class CreatePaymentIntentsRequest extends JsonSerializableType
      * @var string $idempotencyKey Chave estável da operação lógica. Reutilize apenas com os mesmos parâmetros em retries.
      */
     public string $idempotencyKey;
+
+    /**
+     * @var ?value-of<CreatePaymentIntentsRequestCaptureMethod> $captureMethod
+     */
+    #[JsonProperty('capture_method')]
+    public ?string $captureMethod;
 
     /**
      * @var int $amount
@@ -60,6 +67,7 @@ class CreatePaymentIntentsRequest extends JsonSerializableType
      *   idempotencyKey: string,
      *   amount: int,
      *   currency: string,
+     *   captureMethod?: ?value-of<CreatePaymentIntentsRequestCaptureMethod>,
      *   customer?: ?string,
      *   description?: ?string,
      *   receiptEmail?: ?string,
@@ -71,6 +79,7 @@ class CreatePaymentIntentsRequest extends JsonSerializableType
     ) {
         $this->organizationId = $values['organizationId'];
         $this->idempotencyKey = $values['idempotencyKey'];
+        $this->captureMethod = $values['captureMethod'] ?? null;
         $this->amount = $values['amount'];
         $this->currency = $values['currency'];
         $this->customer = $values['customer'] ?? null;

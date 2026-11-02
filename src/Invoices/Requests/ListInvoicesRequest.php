@@ -22,10 +22,22 @@ class ListInvoicesRequest extends JsonSerializableType
     public ?string $startingAfter;
 
     /**
+     * @var ?string $customer
+     */
+    public ?string $customer;
+
+    /**
+     * @var ?string $subscription
+     */
+    public ?string $subscription;
+
+    /**
      * @param array{
      *   organizationId: string,
      *   limit?: ?int,
      *   startingAfter?: ?string,
+     *   customer?: ?string,
+     *   subscription?: ?string,
      * } $values
      */
     public function __construct(
@@ -34,5 +46,7 @@ class ListInvoicesRequest extends JsonSerializableType
         $this->organizationId = $values['organizationId'];
         $this->limit = $values['limit'] ?? null;
         $this->startingAfter = $values['startingAfter'] ?? null;
+        $this->customer = $values['customer'] ?? null;
+        $this->subscription = $values['subscription'] ?? null;
     }
 }

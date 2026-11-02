@@ -16,6 +16,11 @@ use Psr\Http\Client\ClientExceptionInterface;
 use AdilaPay\Subscriptions\Requests\RetrieveSubscriptionsRequest;
 use AdilaPay\Core\Json\JsonDecoder;
 use AdilaPay\Subscriptions\Requests\UpdateSubscriptionsRequest;
+use AdilaPay\Subscriptions\Requests\PreviewSubscriptionsRequest;
+use AdilaPay\Subscriptions\Types\PreviewSubscriptionsResponse;
+use AdilaPay\Subscriptions\Requests\CreatePaymentMethodSetupSubscriptionsRequest;
+use AdilaPay\Subscriptions\Requests\UpdatePaymentMethodSubscriptionsRequest;
+use AdilaPay\Subscriptions\Requests\UpdateQuantitySubscriptionsRequest;
 
 class SubscriptionsClient
 {
@@ -82,6 +87,9 @@ class SubscriptionsClient
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
+        if ($request->customer !== null) {
+            $query['customer'] = $request->customer;
+        }
         if ($request->limit !== null) {
             $query['limit'] = $request->limit;
         }
@@ -189,7 +197,6 @@ class SubscriptionsClient
      *         'organizationId' => 'organizationId',
      *         'id' => 'id',
      *         'idempotencyKey' => 'idempotency-key',
-     *         'cancelAtPeriodEnd' => true,
      *     ]),
      * );
      * ```
@@ -218,6 +225,257 @@ class SubscriptionsClient
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
                     path: "v2/organizations/" . RawClient::encodePathParam($request->organizationId) . "/stripe/subscriptions/" . RawClient::encodePathParam($request->id),
                     method: HttpMethod::PATCH,
+                    headers: $headers,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return JsonDecoder::decodeArray($json, ['string' => 'mixed']); // @phpstan-ignore-line
+            }
+        } catch (JsonException $e) {
+            throw new AdilaPayException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new AdilaPayException(message: $e->getMessage(), previous: $e);
+        }
+        throw new AdilaPayApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Permissão: `subscriptions:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.
+     *
+     * Example:
+     * ```php
+     * $client->subscriptions->preview(
+     *     new PreviewSubscriptionsRequest([
+     *         'organizationId' => 'organizationId',
+     *         'id' => 'id',
+     *         'price' => 'price',
+     *     ]),
+     * );
+     * ```
+     *
+     * @param PreviewSubscriptionsRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?PreviewSubscriptionsResponse
+     * @throws AdilaPayException
+     * @throws AdilaPayApiException
+     */
+    public function preview(PreviewSubscriptionsRequest $request, ?array $options = null): ?PreviewSubscriptionsResponse
+    {
+        $options = array_merge($this->options, $options ?? []);
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v2/organizations/" . RawClient::encodePathParam($request->organizationId) . "/stripe/subscriptions/" . RawClient::encodePathParam($request->id) . "/preview",
+                    method: HttpMethod::POST,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return PreviewSubscriptionsResponse::fromJson($json);
+            }
+        } catch (JsonException $e) {
+            throw new AdilaPayException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new AdilaPayException(message: $e->getMessage(), previous: $e);
+        }
+        throw new AdilaPayApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Permissão: `subscriptions:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.
+     *
+     * Example:
+     * ```php
+     * $client->subscriptions->createPaymentMethodSetup(
+     *     new CreatePaymentMethodSetupSubscriptionsRequest([
+     *         'organizationId' => 'organizationId',
+     *         'id' => 'id',
+     *         'idempotencyKey' => 'idempotency-key',
+     *     ]),
+     * );
+     * ```
+     *
+     * @param CreatePaymentMethodSetupSubscriptionsRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?array<string, mixed>
+     * @throws AdilaPayException
+     * @throws AdilaPayApiException
+     */
+    public function createPaymentMethodSetup(CreatePaymentMethodSetupSubscriptionsRequest $request, ?array $options = null): ?array
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $headers = [];
+        $headers['idempotency-key'] = $request->idempotencyKey;
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v2/organizations/" . RawClient::encodePathParam($request->organizationId) . "/stripe/subscriptions/" . RawClient::encodePathParam($request->id) . "/payment-method/setup",
+                    method: HttpMethod::POST,
+                    headers: $headers,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return JsonDecoder::decodeArray($json, ['string' => 'mixed']); // @phpstan-ignore-line
+            }
+        } catch (JsonException $e) {
+            throw new AdilaPayException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new AdilaPayException(message: $e->getMessage(), previous: $e);
+        }
+        throw new AdilaPayApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Permissão: `subscriptions:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.
+     *
+     * Example:
+     * ```php
+     * $client->subscriptions->updatePaymentMethod(
+     *     new UpdatePaymentMethodSubscriptionsRequest([
+     *         'organizationId' => 'organizationId',
+     *         'id' => 'id',
+     *         'idempotencyKey' => 'idempotency-key',
+     *         'setupIntent' => 'setup_intent',
+     *     ]),
+     * );
+     * ```
+     *
+     * @param UpdatePaymentMethodSubscriptionsRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?array<string, mixed>
+     * @throws AdilaPayException
+     * @throws AdilaPayApiException
+     */
+    public function updatePaymentMethod(UpdatePaymentMethodSubscriptionsRequest $request, ?array $options = null): ?array
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $headers = [];
+        $headers['idempotency-key'] = $request->idempotencyKey;
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v2/organizations/" . RawClient::encodePathParam($request->organizationId) . "/stripe/subscriptions/" . RawClient::encodePathParam($request->id) . "/payment-method",
+                    method: HttpMethod::POST,
+                    headers: $headers,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return JsonDecoder::decodeArray($json, ['string' => 'mixed']); // @phpstan-ignore-line
+            }
+        } catch (JsonException $e) {
+            throw new AdilaPayException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new AdilaPayException(message: $e->getMessage(), previous: $e);
+        }
+        throw new AdilaPayApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Permissão: `subscriptions:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.
+     *
+     * Example:
+     * ```php
+     * $client->subscriptions->updateQuantity(
+     *     new UpdateQuantitySubscriptionsRequest([
+     *         'organizationId' => 'organizationId',
+     *         'id' => 'id',
+     *         'idempotencyKey' => 'idempotency-key',
+     *         'item' => 'item',
+     *         'quantity' => 1,
+     *     ]),
+     * );
+     * ```
+     *
+     * @param UpdateQuantitySubscriptionsRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?array<string, mixed>
+     * @throws AdilaPayException
+     * @throws AdilaPayApiException
+     */
+    public function updateQuantity(UpdateQuantitySubscriptionsRequest $request, ?array $options = null): ?array
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $headers = [];
+        $headers['idempotency-key'] = $request->idempotencyKey;
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v2/organizations/" . RawClient::encodePathParam($request->organizationId) . "/stripe/subscriptions/" . RawClient::encodePathParam($request->id) . "/quantity",
+                    method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
                 ),

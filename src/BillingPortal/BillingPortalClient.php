@@ -5,12 +5,12 @@ namespace AdilaPay\BillingPortal;
 use Psr\Http\Client\ClientInterface;
 use AdilaPay\Core\Client\RawClient;
 use AdilaPay\BillingPortal\Requests\CreateBillingPortalRequest;
+use AdilaPay\BillingPortal\Types\CreateBillingPortalResponse;
 use AdilaPay\Exceptions\AdilaPayException;
 use AdilaPay\Exceptions\AdilaPayApiException;
 use AdilaPay\Core\Json\JsonApiRequest;
 use AdilaPay\Environments;
 use AdilaPay\Core\Client\HttpMethod;
-use AdilaPay\Core\Json\JsonDecoder;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 
@@ -73,11 +73,11 @@ class BillingPortalClient
      *   queryParameters?: array<string, mixed>,
      *   bodyProperties?: array<string, mixed>,
      * } $options
-     * @return ?array<string, mixed>
+     * @return ?CreateBillingPortalResponse
      * @throws AdilaPayException
      * @throws AdilaPayApiException
      */
-    public function create(CreateBillingPortalRequest $request, ?array $options = null): ?array
+    public function create(CreateBillingPortalRequest $request, ?array $options = null): ?CreateBillingPortalResponse
     {
         $options = array_merge($this->options, $options ?? []);
         $headers = [];
@@ -99,7 +99,7 @@ class BillingPortalClient
                 if (empty($json)) {
                     return null;
                 }
-                return JsonDecoder::decodeArray($json, ['string' => 'mixed']); // @phpstan-ignore-line
+                return CreateBillingPortalResponse::fromJson($json);
             }
         } catch (JsonException $e) {
             throw new AdilaPayException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);

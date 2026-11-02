@@ -7,6 +7,10 @@ use AdilaPay\Checkout\Types\CreateCheckoutRequestMode;
 use AdilaPay\Core\Json\JsonProperty;
 use AdilaPay\Checkout\Types\CreateCheckoutRequestLineItemsItem;
 use AdilaPay\Core\Types\ArrayType;
+use AdilaPay\Checkout\Types\CreateCheckoutRequestSubscriptionData;
+use AdilaPay\Checkout\Types\CreateCheckoutRequestTaxIdCollection;
+use AdilaPay\Checkout\Types\CreateCheckoutRequestBillingAddressCollection;
+use AdilaPay\Checkout\Types\CreateCheckoutRequestCustomerUpdate;
 
 class CreateCheckoutRequest extends JsonSerializableType
 {
@@ -51,6 +55,48 @@ class CreateCheckoutRequest extends JsonSerializableType
     public ?bool $allowPromotionCodes;
 
     /**
+     * @var ?CreateCheckoutRequestSubscriptionData $subscriptionData
+     */
+    #[JsonProperty('subscription_data')]
+    public ?CreateCheckoutRequestSubscriptionData $subscriptionData;
+
+    /**
+     * @var ?CreateCheckoutRequestTaxIdCollection $taxIdCollection
+     */
+    #[JsonProperty('tax_id_collection')]
+    public ?CreateCheckoutRequestTaxIdCollection $taxIdCollection;
+
+    /**
+     * @var ?value-of<CreateCheckoutRequestBillingAddressCollection> $billingAddressCollection
+     */
+    #[JsonProperty('billing_address_collection')]
+    public ?string $billingAddressCollection;
+
+    /**
+     * @var ?CreateCheckoutRequestCustomerUpdate $customerUpdate
+     */
+    #[JsonProperty('customer_update')]
+    public ?CreateCheckoutRequestCustomerUpdate $customerUpdate;
+
+    /**
+     * @var ?int $expiresAt
+     */
+    #[JsonProperty('expires_at')]
+    public ?int $expiresAt;
+
+    /**
+     * @var ?string $successUrl
+     */
+    #[JsonProperty('success_url')]
+    public ?string $successUrl;
+
+    /**
+     * @var ?string $cancelUrl
+     */
+    #[JsonProperty('cancel_url')]
+    public ?string $cancelUrl;
+
+    /**
      * @var ?array<string, string> $metadata
      */
     #[JsonProperty('metadata'), ArrayType(['string' => 'string'])]
@@ -65,6 +111,13 @@ class CreateCheckoutRequest extends JsonSerializableType
      *   customer?: ?string,
      *   clientReferenceId?: ?string,
      *   allowPromotionCodes?: ?bool,
+     *   subscriptionData?: ?CreateCheckoutRequestSubscriptionData,
+     *   taxIdCollection?: ?CreateCheckoutRequestTaxIdCollection,
+     *   billingAddressCollection?: ?value-of<CreateCheckoutRequestBillingAddressCollection>,
+     *   customerUpdate?: ?CreateCheckoutRequestCustomerUpdate,
+     *   expiresAt?: ?int,
+     *   successUrl?: ?string,
+     *   cancelUrl?: ?string,
      *   metadata?: ?array<string, string>,
      * } $values
      */
@@ -78,6 +131,13 @@ class CreateCheckoutRequest extends JsonSerializableType
         $this->customer = $values['customer'] ?? null;
         $this->clientReferenceId = $values['clientReferenceId'] ?? null;
         $this->allowPromotionCodes = $values['allowPromotionCodes'] ?? null;
+        $this->subscriptionData = $values['subscriptionData'] ?? null;
+        $this->taxIdCollection = $values['taxIdCollection'] ?? null;
+        $this->billingAddressCollection = $values['billingAddressCollection'] ?? null;
+        $this->customerUpdate = $values['customerUpdate'] ?? null;
+        $this->expiresAt = $values['expiresAt'] ?? null;
+        $this->successUrl = $values['successUrl'] ?? null;
+        $this->cancelUrl = $values['cancelUrl'] ?? null;
         $this->metadata = $values['metadata'] ?? null;
     }
 }

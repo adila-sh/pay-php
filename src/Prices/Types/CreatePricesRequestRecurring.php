@@ -20,6 +20,18 @@ class CreatePricesRequestRecurring extends JsonSerializableType
     public ?int $intervalCount;
 
     /**
+     * @var ?value-of<CreatePricesRequestRecurringUsageType> $usageType
+     */
+    #[JsonProperty('usage_type')]
+    public ?string $usageType;
+
+    /**
+     * @var ?string $meter
+     */
+    #[JsonProperty('meter')]
+    public ?string $meter;
+
+    /**
      * @var ?int $trialPeriodDays
      */
     #[JsonProperty('trial_period_days')]
@@ -29,6 +41,8 @@ class CreatePricesRequestRecurring extends JsonSerializableType
      * @param array{
      *   interval: value-of<CreatePricesRequestRecurringInterval>,
      *   intervalCount?: ?int,
+     *   usageType?: ?value-of<CreatePricesRequestRecurringUsageType>,
+     *   meter?: ?string,
      *   trialPeriodDays?: ?int,
      * } $values
      */
@@ -37,6 +51,8 @@ class CreatePricesRequestRecurring extends JsonSerializableType
     ) {
         $this->interval = $values['interval'];
         $this->intervalCount = $values['intervalCount'] ?? null;
+        $this->usageType = $values['usageType'] ?? null;
+        $this->meter = $values['meter'] ?? null;
         $this->trialPeriodDays = $values['trialPeriodDays'] ?? null;
     }
 

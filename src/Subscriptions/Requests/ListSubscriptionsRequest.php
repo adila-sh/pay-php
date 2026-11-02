@@ -13,6 +13,11 @@ class ListSubscriptionsRequest extends JsonSerializableType
     public string $organizationId;
 
     /**
+     * @var ?string $customer
+     */
+    public ?string $customer;
+
+    /**
      * @var ?int $limit
      */
     public ?int $limit;
@@ -30,6 +35,7 @@ class ListSubscriptionsRequest extends JsonSerializableType
     /**
      * @param array{
      *   organizationId: string,
+     *   customer?: ?string,
      *   limit?: ?int,
      *   startingAfter?: ?string,
      *   status?: ?value-of<ListSubscriptionsRequestStatus>,
@@ -39,6 +45,7 @@ class ListSubscriptionsRequest extends JsonSerializableType
         array $values,
     ) {
         $this->organizationId = $values['organizationId'];
+        $this->customer = $values['customer'] ?? null;
         $this->limit = $values['limit'] ?? null;
         $this->startingAfter = $values['startingAfter'] ?? null;
         $this->status = $values['status'] ?? null;

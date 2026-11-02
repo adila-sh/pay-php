@@ -23,17 +23,31 @@ class UpdateSubscriptionsRequest extends JsonSerializableType
     public string $idempotencyKey;
 
     /**
-     * @var bool $cancelAtPeriodEnd
+     * @var ?bool $cancelAtPeriodEnd
      */
     #[JsonProperty('cancel_at_period_end')]
-    public bool $cancelAtPeriodEnd;
+    public ?bool $cancelAtPeriodEnd;
+
+    /**
+     * @var ?string $price
+     */
+    #[JsonProperty('price')]
+    public ?string $price;
+
+    /**
+     * @var ?int $prorationDate
+     */
+    #[JsonProperty('proration_date')]
+    public ?int $prorationDate;
 
     /**
      * @param array{
      *   organizationId: string,
      *   id: string,
      *   idempotencyKey: string,
-     *   cancelAtPeriodEnd: bool,
+     *   cancelAtPeriodEnd?: ?bool,
+     *   price?: ?string,
+     *   prorationDate?: ?int,
      * } $values
      */
     public function __construct(
@@ -42,6 +56,8 @@ class UpdateSubscriptionsRequest extends JsonSerializableType
         $this->organizationId = $values['organizationId'];
         $this->id = $values['id'];
         $this->idempotencyKey = $values['idempotencyKey'];
-        $this->cancelAtPeriodEnd = $values['cancelAtPeriodEnd'];
+        $this->cancelAtPeriodEnd = $values['cancelAtPeriodEnd'] ?? null;
+        $this->price = $values['price'] ?? null;
+        $this->prorationDate = $values['prorationDate'] ?? null;
     }
 }
