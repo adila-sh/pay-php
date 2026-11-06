@@ -55,7 +55,7 @@ class PaymentIntentsClient
     }
 
     /**
-     * Permissão: `payments:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.
+     * Permissão: `payments:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada. presentment_details preserva presentment_amount e presentment_currency do comprador, sem substituir amount/currency da integração.
      *
      * Example:
      * ```php
@@ -126,7 +126,7 @@ class PaymentIntentsClient
     }
 
     /**
-     * Permissão: `payments:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.
+     * Permissão: `payments:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres. presentment_details preserva presentment_amount e presentment_currency do comprador, sem substituir amount/currency da integração.
      *
      * Example:
      * ```php
@@ -190,7 +190,7 @@ class PaymentIntentsClient
     }
 
     /**
-     * Permissão: `payments:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.
+     * Permissão: `payments:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada. presentment_details preserva presentment_amount e presentment_currency do comprador, sem substituir amount/currency da integração.
      *
      * Example:
      * ```php
@@ -248,7 +248,7 @@ class PaymentIntentsClient
     }
 
     /**
-     * Permissão: `payments:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.
+     * Permissão: `payments:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres. presentment_details preserva presentment_amount e presentment_currency do comprador, sem substituir amount/currency da integração.
      *
      * Example:
      * ```php

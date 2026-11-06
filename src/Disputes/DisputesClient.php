@@ -4,7 +4,7 @@ namespace AdilaPay\Disputes;
 
 use Psr\Http\Client\ClientInterface;
 use AdilaPay\Core\Client\RawClient;
-use AdilaPay\Disputes\Requests\DefenseDisputesRequest;
+use AdilaPay\Disputes\Requests\GetSmartSettingsDisputesRequest;
 use AdilaPay\Exceptions\AdilaPayException;
 use AdilaPay\Exceptions\AdilaPayApiException;
 use AdilaPay\Core\Json\JsonApiRequest;
@@ -13,6 +13,8 @@ use AdilaPay\Core\Client\HttpMethod;
 use AdilaPay\Core\Json\JsonDecoder;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
+use AdilaPay\Disputes\Requests\UpdateSmartSettingsDisputesRequest;
+use AdilaPay\Disputes\Requests\DefenseDisputesRequest;
 use AdilaPay\Disputes\Requests\DownloadEvidenceDisputesRequest;
 use AdilaPay\Disputes\Requests\UploadEvidenceDisputesRequest;
 use AdilaPay\Disputes\Requests\SaveDraftDisputesRequest;
@@ -56,6 +58,127 @@ class DisputesClient
     ) {
         $this->client = $client;
         $this->options = $options ?? [];
+    }
+
+    /**
+     * Permissão: `disputes:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.
+     *
+     * Example:
+     * ```php
+     * $client->disputes->getSmartSettings(
+     *     new GetSmartSettingsDisputesRequest([
+     *         'organizationId' => 'organizationId',
+     *     ]),
+     * );
+     * ```
+     *
+     * @param GetSmartSettingsDisputesRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?array<string, mixed>
+     * @throws AdilaPayException
+     * @throws AdilaPayApiException
+     */
+    public function getSmartSettings(GetSmartSettingsDisputesRequest $request, ?array $options = null): ?array
+    {
+        $options = array_merge($this->options, $options ?? []);
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v2/organizations/" . RawClient::encodePathParam($request->organizationId) . "/stripe/disputes/settings",
+                    method: HttpMethod::GET,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return JsonDecoder::decodeArray($json, ['string' => 'mixed']); // @phpstan-ignore-line
+            }
+        } catch (JsonException $e) {
+            throw new AdilaPayException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new AdilaPayException(message: $e->getMessage(), previous: $e);
+        }
+        throw new AdilaPayApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
+    }
+
+    /**
+     * Permissão: `disputes:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.
+     *
+     * Example:
+     * ```php
+     * $client->disputes->updateSmartSettings(
+     *     new UpdateSmartSettingsDisputesRequest([
+     *         'organizationId' => 'organizationId',
+     *         'idempotencyKey' => 'idempotency-key',
+     *         'preference' => UpdateSmartSettingsDisputesRequestPreference::On->value,
+     *         'confirmed' => true,
+     *     ]),
+     * );
+     * ```
+     *
+     * @param UpdateSmartSettingsDisputesRequest $request
+     * @param ?array{
+     *   baseUrl?: string,
+     *   maxRetries?: int,
+     *   timeout?: float,
+     *   headers?: array<string, string>,
+     *   queryParameters?: array<string, mixed>,
+     *   bodyProperties?: array<string, mixed>,
+     * } $options
+     * @return ?array<string, mixed>
+     * @throws AdilaPayException
+     * @throws AdilaPayApiException
+     */
+    public function updateSmartSettings(UpdateSmartSettingsDisputesRequest $request, ?array $options = null): ?array
+    {
+        $options = array_merge($this->options, $options ?? []);
+        $headers = [];
+        $headers['idempotency-key'] = $request->idempotencyKey;
+        try {
+            $response = $this->client->sendRequest(
+                new JsonApiRequest(
+                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
+                    path: "v2/organizations/" . RawClient::encodePathParam($request->organizationId) . "/stripe/disputes/settings",
+                    method: HttpMethod::PATCH,
+                    headers: $headers,
+                    body: $request,
+                ),
+                $options,
+            );
+            $statusCode = $response->getStatusCode();
+            if ($statusCode >= 200 && $statusCode < 400) {
+                $json = $response->getBody()->getContents();
+                if (empty($json)) {
+                    return null;
+                }
+                return JsonDecoder::decodeArray($json, ['string' => 'mixed']); // @phpstan-ignore-line
+            }
+        } catch (JsonException $e) {
+            throw new AdilaPayException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
+        } catch (ClientExceptionInterface $e) {
+            throw new AdilaPayException(message: $e->getMessage(), previous: $e);
+        }
+        throw new AdilaPayApiException(
+            message: 'API request failed',
+            statusCode: $statusCode,
+            body: $response->getBody()->getContents(),
+        );
     }
 
     /**

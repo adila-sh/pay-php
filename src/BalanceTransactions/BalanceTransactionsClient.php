@@ -51,7 +51,7 @@ class BalanceTransactionsClient
     }
 
     /**
-     * Permissão: `transactions:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.
+     * Permissão: `transactions:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada. presentment_details preserva presentment_amount e presentment_currency do comprador, sem substituir amount/currency da integração.
      *
      * Example:
      * ```php

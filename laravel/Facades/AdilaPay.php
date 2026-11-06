@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Facade;
 /**
  * Acesso aos recursos do AdilaPayClient: AdilaPay::customers()->list(...).
  *
+ * @method static \AdilaPay\PaymentMethodDomains\PaymentMethodDomainsClient paymentMethodDomains()
  * @method static \AdilaPay\Authorizations\AuthorizationsClient authorizations()
+ * @method static \AdilaPay\Checkout\CheckoutClient checkout()
  * @method static \AdilaPay\Disputes\DisputesClient disputes()
  * @method static \AdilaPay\Schedules\SchedulesClient schedules()
  * @method static \AdilaPay\UsageMeters\UsageMetersClient usageMeters()
@@ -24,7 +26,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static \AdilaPay\PaymentIntents\PaymentIntentsClient paymentIntents()
  * @method static \AdilaPay\Charges\ChargesClient charges()
  * @method static \AdilaPay\Refunds\RefundsClient refunds()
- * @method static \AdilaPay\Checkout\CheckoutClient checkout()
  * @method static \AdilaPay\PaymentLinks\PaymentLinksClient paymentLinks()
  * @method static \AdilaPay\PromotionCodes\PromotionCodesClient promotionCodes()
  * @method static \AdilaPay\Subscriptions\SubscriptionsClient subscriptions()

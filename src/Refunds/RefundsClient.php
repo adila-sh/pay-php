@@ -54,7 +54,7 @@ class RefundsClient
     }
 
     /**
-     * Permissão: `refunds:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.
+     * Permissão: `refunds:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada. presentment_details preserva presentment_amount e presentment_currency do comprador, sem substituir amount/currency da integração.
      *
      * Example:
      * ```php
@@ -119,7 +119,7 @@ class RefundsClient
     }
 
     /**
-     * Permissão: `refunds:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres.
+     * Permissão: `refunds:write`. A conta Stripe é resolvida no servidor a partir da organização autorizada. Exige Idempotency-Key com 8 a 255 caracteres. presentment_details preserva presentment_amount e presentment_currency do comprador, sem substituir amount/currency da integração.
      *
      * Example:
      * ```php
@@ -182,7 +182,7 @@ class RefundsClient
     }
 
     /**
-     * Permissão: `refunds:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada.
+     * Permissão: `refunds:read`. A conta Stripe é resolvida no servidor a partir da organização autorizada. presentment_details preserva presentment_amount e presentment_currency do comprador, sem substituir amount/currency da integração.
      *
      * Example:
      * ```php

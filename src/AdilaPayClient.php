@@ -2,7 +2,9 @@
 
 namespace AdilaPay;
 
+use AdilaPay\PaymentMethodDomains\PaymentMethodDomainsClient;
 use AdilaPay\Authorizations\AuthorizationsClient;
+use AdilaPay\Checkout\CheckoutClient;
 use AdilaPay\Disputes\DisputesClient;
 use AdilaPay\Schedules\SchedulesClient;
 use AdilaPay\UsageMeters\UsageMetersClient;
@@ -18,7 +20,6 @@ use AdilaPay\Prices\PricesClient;
 use AdilaPay\PaymentIntents\PaymentIntentsClient;
 use AdilaPay\Charges\ChargesClient;
 use AdilaPay\Refunds\RefundsClient;
-use AdilaPay\Checkout\CheckoutClient;
 use AdilaPay\PaymentLinks\PaymentLinksClient;
 use AdilaPay\PromotionCodes\PromotionCodesClient;
 use AdilaPay\Subscriptions\SubscriptionsClient;
@@ -36,9 +37,19 @@ use Exception;
 class AdilaPayClient
 {
     /**
+     * @var PaymentMethodDomainsClient $paymentMethodDomains
+     */
+    public PaymentMethodDomainsClient $paymentMethodDomains;
+
+    /**
      * @var AuthorizationsClient $authorizations
      */
     public AuthorizationsClient $authorizations;
+
+    /**
+     * @var CheckoutClient $checkout
+     */
+    public CheckoutClient $checkout;
 
     /**
      * @var DisputesClient $disputes
@@ -114,11 +125,6 @@ class AdilaPayClient
      * @var RefundsClient $refunds
      */
     public RefundsClient $refunds;
-
-    /**
-     * @var CheckoutClient $checkout
-     */
-    public CheckoutClient $checkout;
 
     /**
      * @var PaymentLinksClient $paymentLinks
@@ -216,7 +222,9 @@ class AdilaPayClient
             options: $this->options,
         );
 
+        $this->paymentMethodDomains = new PaymentMethodDomainsClient($this->client, $this->options);
         $this->authorizations = new AuthorizationsClient($this->client, $this->options);
+        $this->checkout = new CheckoutClient($this->client, $this->options);
         $this->disputes = new DisputesClient($this->client, $this->options);
         $this->schedules = new SchedulesClient($this->client, $this->options);
         $this->usageMeters = new UsageMetersClient($this->client, $this->options);
@@ -232,7 +240,6 @@ class AdilaPayClient
         $this->paymentIntents = new PaymentIntentsClient($this->client, $this->options);
         $this->charges = new ChargesClient($this->client, $this->options);
         $this->refunds = new RefundsClient($this->client, $this->options);
-        $this->checkout = new CheckoutClient($this->client, $this->options);
         $this->paymentLinks = new PaymentLinksClient($this->client, $this->options);
         $this->promotionCodes = new PromotionCodesClient($this->client, $this->options);
         $this->subscriptions = new SubscriptionsClient($this->client, $this->options);
